@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="29933f41-f76a-449f-8017-2a1d8c986296" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="116a741d-7ce7-4564-91bc-6d7a1fedd94e" file="secure.properties" key="${secure.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<flow name="github-actionsFlow" doc:id="9996290a-9e1b-49bc-bcd0-461441f70f0c" >
+		<http:listener doc:name="Listener" doc:id="debaad40-9d03-4738-8f50-71e4508f8bc5" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-payload value="#[&quot;It worked! Secured property: &quot; ++ Mule::p('secure::encrypted.property')]" doc:name="Set Payload" doc:id="22d1a8c1-c2e7-45b0-885c-997e27028569" />
+		<logger level="INFO" doc:name="Logger" doc:id="bfff8d7b-7004-4343-8775-ae72c33c600b" message='#[payload]' />
+	</flow>
+	<sub-flow name="github-actions:test-subflow" doc:id="e0700209-c1a4-4667-9282-ebefae548d17" >
+		<ee:transform doc:name="Transform Message" doc:id="597b8cd0-f6f3-4786-a754-a13dfeba58c8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (payload != -1) {
+	"payload": payload
+} else "Received a -1"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>
